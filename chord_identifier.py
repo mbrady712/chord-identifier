@@ -1,17 +1,17 @@
 import itertools
 
 note_to_semitone = {
-    'B#': 0, 'Cn': 0, 'Dbb': 0, 
+    'B#': 0, 'Cn': 0, 'Dd': 0, 
     'Bx': 1, 'C#': 1, 'Db': 1, 
-    'Cx': 2, 'Dn': 2, 'Ebb': 2,
-    'D#': 3, 'Eb': 3, 'Fbb': 3,
+    'Cx': 2, 'Dn': 2, 'Ed': 2,
+    'D#': 3, 'Eb': 3, 'Fd': 3,
     'Dx': 4, 'En': 4, 'Fb': 4,
-    'E#': 5, 'Fn': 5, 'Gbb': 5,
+    'E#': 5, 'Fn': 5, 'Gd': 5,
     'Ex': 6, 'F#': 6, 'Gb': 6,
-    'Fx': 7, 'Gn': 7, 'Abb': 7,
+    'Fx': 7, 'Gn': 7, 'Ad': 7,
     'G#': 8, 'Ab': 8, 
-    'Gx': 9, 'An': 9, 'Bbb': 9,
-    'A#': 10, 'Bb': 10, 'Cbb': 10,
+    'Gx': 9, 'An': 9, 'Bd': 9,
+    'A#': 10, 'Bb': 10, 'Cd': 10,
     'Ax': 11, 'Bn': 11, 'Cb': 11
 }
 
@@ -55,14 +55,15 @@ class ChordIdentifier:
             self.chordQuality = self.getChordQuality(self.rootPosSemitoneIntervals)
             self.chordIdentity = self.identifyChord(self.rootPosNotes, self.chordQuality)
         else:
-            self.chordIdentity = "Unknown Chord"
+            self.chordIdentity = "Unknown chord"
 
     def identifyChord(self, rootPosNotes, chordQuality):
-        chordIdentity = ""
-        root = rootPosNotes[0]
-        if(root[1] == 'n'):
-             root = root[0]
-        return root + " " + chordQuality
+        root = rootPosNotes[0] + " "
+        if(chordQuality == "Unknown chord"):
+            root = ""
+        elif(root[1] == 'n'):
+            root = root[0] + " "
+        return root + chordQuality
 
     def getChordQuality(self, rootPosSemitoneIntervals):
         quality = "Unknown chord"
@@ -111,7 +112,8 @@ class ChordIdentifier:
         return accidentals
     
     def getNaturalTones(self):
-        return [natural_to_naturalTone[natural] for natural in self.naturals]
+        naturalTones = [natural_to_naturalTone[natural] for natural in self.naturals]
+        return naturalTones
     
     def find_intervals(self, tones, numPossibleTones):
         noteIter = 0
@@ -129,8 +131,7 @@ class ChordIdentifier:
         return intervals
 
     def find_rootPos(self, numPossibleTones):
-        major3rd = 2
-        minor3rd = 2
+        third = 2
         allInversions = [list(permutation) for permutation in itertools.permutations(self.naturalTones)]
         rootPositionNaturalTones = []
         chordIter = 0
@@ -140,7 +141,7 @@ class ChordIdentifier:
             #See if the permutation has all thirds (i.e. is in root position)
             allThirds = True
             for interval in intervals:
-                if(interval != major3rd and interval != minor3rd):
+                if(interval != third):
                     allThirds = False
             if(allThirds):
                 rootPositionNaturalTones = allInversions[chordIter]
@@ -152,9 +153,39 @@ def get_notes():
     return notes.split()
 
 def main():
-    notes = get_notes()
-    chord_identifier = ChordIdentifier(notes)
-    print(chord_identifier.chordIdentity)
+    letter_names = ["C", "D", "E", "F", "G", "A", "B"]
+    accidentals = ["n", "b", "#", "d", "x"]
+    counter = 0
+
+    # Num triads = possible roots times inversions times num of different triads
+    # Possible roots = Cb, C, C#, Db, D, D#, Eb, E, E#, Fb, F, F#, Gb, G, G#, Ab, A, A#, Bb, B, B# = 21
+    # Num triads = 21 x 6 x 4 = 504 - 6 (B# augmented requires a triple sharp) = 498
+
+    # Generate all possible six-member lists for triads
+    triad_combinations = itertools.product(letter_names, accidentals, repeat=3)
+    for triad in triad_combinations:
+        notes = [note for pair in triad for note in pair]
+        chord_identifier = ChordIdentifier(notes)
+        output = chord_identifier.chordIdentity
+        if(output != "Unknown chord" and output[1] != 'x' and output[1] !='d' and "augmented" in output):
+            print(f"{notes}: {output}")
+            counter += 1
+            print(counter)
+    
+    # Num 7th chords = 21 x 24 x 6 = 3024
+    # 504 chords of each quality 
+    # No Cb, Fb diminished 7th, bc they require a triple flat
+
+    # Generate all possible eight-member lists for seventh chords
+    seventh_combinations = itertools.product(letter_names, accidentals, repeat=4)
+    for seventh in seventh_combinations:
+        notes = [note for pair in seventh for note in pair]
+        chord_identifier = ChordIdentifier(notes)
+        output = chord_identifier.chordIdentity
+        if(output != "Unknown chord" and output[1] != 'x' and output[1] !='d'):
+            print(f"{notes}: {output}")
+            counter += 1
+            print(counter)
 
 if __name__ == "__main__":
     main()
