@@ -8,7 +8,14 @@ function ChordIdentifier() {
 
   // Letter names and accidentals options
   const letterOptions = ['', 'C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const accidentalOptions = ['', 'n', 'b', '#', 'd', 'x'];
+  const accidentalOptions = [
+    { value: '', label: 'Select Accidental' },
+    { value: 'n', label: '\u266E' }, // Natural (♮)
+    { value: 'b', label: '\u266D' }, // Flat (♭)
+    { value: '#', label: '\u266F' }, // Sharp (♯)
+    { value: 'd', label: '\uD834\uDD2B' }, // Double Flat (𝄫)
+    { value: 'x', label: '\uD834\uDD2A' }  // Double Sharp (𝄪)
+  ];
 
   // Update state when a dropdown value changes
   const handleDropdownChange = (index, value) => {
@@ -65,8 +72,8 @@ function ChordIdentifier() {
               onChange={(e) => handleDropdownChange(i + 1, e.target.value)}
             >
               {accidentalOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option || 'Select Accidental'}
+                <option key={index} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
